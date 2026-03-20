@@ -18,6 +18,10 @@ Beth Israel Deaconess Medical Center.
 | 5 | LLM (T5) | Auto-generate plain-English clinical trial progress reports |
 | 6 | Dashboard | Interactive Streamlit analytics app across all phase outputs |
 
+### System architecture
+
+![ClinicalAI project architecture](documentation_images/clinicalai_project_architecture.svg)
+
 ---
 
 ## Project structure
@@ -30,6 +34,13 @@ ClinicalAI/
 ├── .env                          ← copy from .env.template and fill in
 ├── .env.template
 ├── .gitignore
+│
+├── documentation_images/         ← architecture & pipeline diagrams for README
+│   ├── clinicalai_project_architecture.svg
+│   ├── phase1_data_pipeline_flow.svg
+│   ├── phase2_nlp_pipeline_Flow.svg
+│   ├── phase3_ml_pipeline.svg
+│   └── accuracy_improvement_roadmap.svg
 │
 ├── data/
 │   ├── raw/                      ← MIMIC-III-10k CSVs from Kaggle (gitignored)
@@ -172,6 +183,8 @@ de-identified DOB overflow fix), engineers features, runs EDA, and saves:
 - `data/processed/mimic_master_features.csv` → input to Phases 3, 4, 5
 - `data/processed/mimic_notes_nlp.csv` → input to Phase 2
 
+![Phase 1 data pipeline flow](documentation_images/phase1_data_pipeline_flow.svg)
+
 Runtime: ~30 seconds
 
 ---
@@ -187,6 +200,8 @@ Fine-tunes `distilbert-base-uncased` on a stratified 20k sample of 480k
 MIMIC clinical notes. Labels: `stable / moderate / critical` (keyword-derived).
 Uses lazy tokenization (no upfront RAM spike), class-weighted loss, and
 early stopping on macro-F1.
+
+![Phase 2 NLP pipeline flow](documentation_images/phase2_nlp_pipeline_Flow.svg)
 
 Key settings (in `nlp_pipeline.py`):
 ```python
@@ -216,6 +231,8 @@ Predicts in-hospital mortality (`DIED=1`) from tabular features + NLP severity
 scores. Engineers 5 clinical domain features (liver score, renal score,
 hematologic score, high-risk flag, age group). Uses SMOTE for class imbalance
 and `RandomizedSearchCV` (30 iterations, 5-fold CV) for hyperparameter tuning.
+
+![Phase 3 ML pipeline](documentation_images/phase3_ml_pipeline.svg)
 
 Optional SHAP explanations:
 ```bash
@@ -387,6 +404,8 @@ sample size, and all XGBoost hyperparameters found by random search.
 ---
 
 ## Improving accuracy
+
+![Accuracy improvement roadmap](documentation_images/accuracy_improvement_roadmap.svg)
 
 **Phase 2 NLP — push from 79% toward 85%+:**
 ```python
