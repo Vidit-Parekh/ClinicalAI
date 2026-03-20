@@ -6,6 +6,7 @@
 data/raw/
 data/processed/
 data/archive
+documentation_images
 
 # ── Saved models — too large for git ───────────────────────────
 # Root models folder
