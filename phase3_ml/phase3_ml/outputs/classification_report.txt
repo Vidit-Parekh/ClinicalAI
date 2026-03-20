@@ -1,0 +1,14 @@
+ClinicalAI — Phase 3 XGBoost Evaluation
+=============================================
+
+              precision    recall  f1-score   support
+
+    survived     0.9428    0.9493    0.9460      1163
+        died     0.5124    0.4806    0.4960       129
+
+    accuracy                         0.9025      1292
+   macro avg     0.7276    0.7149    0.7210      1292
+weighted avg     0.8998    0.9025    0.9011      1292
+
+ROC-AUC  : 0.8892
+AUC-PR   : 0.5900

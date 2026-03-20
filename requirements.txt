@@ -1,0 +1,63 @@
+# ══════════════════════════════════════════════════════════════
+# ClinicalAI — Requirements (exact pinned versions)
+# Medpace-inspired Clinical Trial AI Platform
+#
+# Install: pip install -r requirements.txt
+# Python  : 3.10+
+# Date    : March 2026
+#
+# Dependency note:
+#   streamlit (all versions) hard-caps pandas<3.
+#   pandas==2.2.3 is the latest 2.x LTS release and satisfies
+#   all constraints across streamlit, datasets, evaluate, seaborn.
+# ══════════════════════════════════════════════════════════════
+
+# ── Core Data ─────────────────────────────────────────────────
+pandas==2.2.3                   # pinned to 2.x — streamlit requires pandas<3
+numpy==2.4.2
+faker==40.11.0                  # synthetic data / dev testing only
+
+# ── Machine Learning ──────────────────────────────────────────
+scikit-learn==1.8.0
+xgboost==3.2.0                  # Phase 3: outcome prediction model
+imbalanced-learn==0.14.1        # SMOTE for class imbalance
+
+# ── NLP & Transformers ────────────────────────────────────────
+# Confirmed working with emilyalsentzer/Bio_ClinicalBERT:
+#   from transformers import AutoTokenizer, AutoModel
+#   tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+#   model     = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+transformers==4.57.6            # AutoTokenizer, AutoModel, AutoModelForSequenceClassification
+tokenizers==0.22.2              # Fast WordPiece tokenizer (used by Bio_ClinicalBERT)
+torch==2.10.0                   # PyTorch backend — install CPU or CUDA build as needed
+accelerate==1.13.0              # Required by HuggingFace Trainer API
+datasets==4.8.2                 # HuggingFace dataset utilities
+evaluate==0.4.6                 # HuggingFace model evaluation metrics
+
+# sentencepiece is NOT needed — Bio_ClinicalBERT uses WordPiece not SentencePiece
+# spacy is optional for NER but not required for Phases 1-5
+# spacy==3.7.x + python -m spacy download en_core_web_sm
+
+# ── Visualization & Dashboard ─────────────────────────────────
+matplotlib==3.10.8
+seaborn==0.13.2
+plotly==6.6.0                   # Phase 6: interactive dashboard charts
+streamlit==1.55.0               # Phase 6: analytics dashboard UI (requires pandas<3)
+
+# ── Evaluation & Experiment Tracking ─────────────────────────
+mlflow==3.10.1                  # experiment tracking (optional but recommended)
+rouge-score==0.1.2              # Phase 5: ROUGE evaluation for summarization
+shap==0.47.2                    # Phase 3: SHAP feature importance for XGBoost
+
+# ── Statistical & Scientific ──────────────────────────────────
+scipy==1.17.0                   # statistical tests, AUC confidence intervals
+
+# ── Utilities ─────────────────────────────────────────────────
+python-dotenv==1.2.1            # .env file support for DATA_DIR, MODEL_DIR etc.
+tqdm==4.67.3                    # progress bars for training loops
+joblib==1.5.3                   # model serialization (.pkl files)
+pyyaml==6.0.3                   # config file support
+
+# ── Notebook Support (optional) ───────────────────────────────
+jupyter==1.1.1
+ipykernel==7.2.0

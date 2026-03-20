@@ -1,0 +1,16 @@
+ClinicalAI — Phase 2 BioBERT Evaluation Report
+==================================================
+
+              precision    recall  f1-score   support
+
+      stable     0.8201    0.8063    0.8131      1182
+    moderate     0.7485    0.7855    0.7665      1254
+    critical     0.7778    0.7199    0.7477       564
+
+    accuracy                         0.7813      3000
+   macro avg     0.7821    0.7705    0.7758      3000
+weighted avg     0.7822    0.7813    0.7814      3000
+
+Accuracy   : 0.7813
+F1 macro   : 0.7758
+F1 weighted: 0.7814
