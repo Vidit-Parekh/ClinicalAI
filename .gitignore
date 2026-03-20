@@ -5,6 +5,7 @@
 # ── MIMIC-III data — NEVER commit (PHI / licensed data) ────────
 data/raw/
 data/processed/
+data/archive
 
 # ── Saved models — too large for git ───────────────────────────
 # Root models folder
