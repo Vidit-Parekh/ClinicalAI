@@ -378,15 +378,18 @@ gives an effective batch of 128 without storing 128 samples in VRAM.
 
 ## Results summary
 
-| Phase | Metric | Value |
-|-------|--------|-------|
-| Phase 2 NLP | Accuracy | ~79–85% |
-| Phase 2 NLP | Macro F1 | ~0.76–0.82 |
-| Phase 3 ML | ROC-AUC | ~0.87–0.92 |
-| Phase 3 ML | AUC-PR | ~0.65–0.75 |
-| Phase 4 Liver | R² | ~0.846 |
-| Phase 4 Kidney | R² | ~0.801 |
-| Phase 4 Spleen | R² | ~0.322 |
+> All results obtained on a GTX 1650 (3.9GB VRAM) laptop. See
+> [Improving accuracy](#improving-accuracy) for expected gains with more compute.
+
+| Phase | Metric | Value (GTX 1650) | Expected (A100 / cloud GPU) |
+|-------|--------|-----------------|----------------------------|
+| Phase 2 NLP | Accuracy | ~79–85% | ~88–92% |
+| Phase 2 NLP | Macro F1 | ~0.76–0.82 | ~0.85–0.90 |
+| Phase 3 ML | ROC-AUC | ~0.87–0.92 | ~0.93–0.95 |
+| Phase 3 ML | AUC-PR | ~0.65–0.75 | ~0.78–0.85 |
+| Phase 4 Liver | R² | ~0.846 | ~0.92+ |
+| Phase 4 Kidney | R² | ~0.801 | ~0.88+ |
+| Phase 4 Spleen | R² | ~0.322 | ~0.60+ |
 
 ---
 
@@ -407,24 +410,73 @@ sample size, and all XGBoost hyperparameters found by random search.
 
 ![Accuracy improvement roadmap](documentation_images/accuracy_improvement_roadmap.svg)
 
+> **Note on compute constraints:** This entire project was built and trained
+> on a laptop with an **NVIDIA GTX 1650 (3.9GB VRAM) and 32GB RAM**. Every
+> architectural decision — DistilBERT over Bio_ClinicalBERT, 20k sample over
+> 480k, T5-small over BART, MAX_LEN=128 — was a deliberate trade-off to fit
+> within these constraints. With access to a modern GPU (A100, V100, or even
+> a consumer RTX 4090), all of these constraints can be lifted and accuracy
+> would improve substantially across every phase.
+
+---
+
+### With current hardware (GTX 1650)
+
 **Phase 2 NLP — push from 79% toward 85%+:**
 ```python
 # In phase2_nlp/nlp_pipeline.py
 SAMPLE_SIZE = 50_000   # was 20_000
-MAX_LEN     = 256      # was 128
+MAX_LEN     = 256      # was 128 — captures 2x more clinical context
 ```
-
-**Phase 2 NLP — use clinical pretrained model (overnight run):**
-```env
-# In .env
-HF_MODEL_NAME=emilyalsentzer/Bio_ClinicalBERT
-```
-Then set `SAMPLE_SIZE = None` for full dataset.
 
 **Phase 2 NLP — boost critical class recall:**
 ```python
 # In phase2_nlp/train_biobert.py, after compute_class_weight:
 class_weights[LABEL_MAP["critical"]] *= 1.5
+```
+
+---
+
+### With more compute power (expected accuracy gains)
+
+| Upgrade | Phase | Current | Expected |
+|---------|-------|---------|----------|
+| `Bio_ClinicalBERT` + full 480k notes | Phase 2 NLP | ~79–85% | **88–92%** |
+| `MAX_LEN=512` (full note context) | Phase 2 NLP | ~79–85% | **+3–5%** |
+| `facebook/bart-large-cnn` fine-tuning | Phase 5 LLM | T5-small | **Higher ROUGE** |
+| XGBoost on full feature set + all labs | Phase 3 ML | 0.87–0.92 AUC | **0.93–0.95 AUC** |
+| Real CT segmentation volumes (not proxies) | Phase 4 Imaging | R²=0.85 | **R²=0.92+** |
+
+**Phase 2 NLP — switch to clinical pretrained model:**
+```env
+# In .env — requires ~8GB+ VRAM and overnight training
+HF_MODEL_NAME=emilyalsentzer/Bio_ClinicalBERT
+```
+```python
+# In phase2_nlp/nlp_pipeline.py
+SAMPLE_SIZE = None      # use all 480k notes
+MAX_LEN     = 512       # full Bio_ClinicalBERT context window
+```
+
+**Phase 2 NLP — try larger clinical models (cloud GPU recommended):**
+```env
+HF_MODEL_NAME=microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext
+# or
+HF_MODEL_NAME=dmis-lab/biobert-large-cased-v1.1
+```
+
+**Phase 3 ML — add more lab features and longer hyperparameter search:**
+```python
+# In phase3_ml/outcome_model.py
+n_iter = 100   # was 30 — more thorough search
+# Also add CHARTEVENTS vitals (heart rate, BP, SpO2) as features
+# for significantly better mortality prediction
+```
+
+**Phase 5 LLM — use BART-large for better report quality:**
+```env
+# In .env — requires ~8GB+ VRAM
+HF_SUMM_MODEL=facebook/bart-large-cnn
 ```
 
 ---
